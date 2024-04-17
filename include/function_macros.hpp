@@ -1,0 +1,8 @@
+#ifndef __STRINGIFY_FUNCTION_NAMES_HPP__
+#define __STRINGIFY_FUNCTION_NAMES_HPP__
+
+#ifndef STRINGIFY_TO_STRING_NAME
+#define STRINGIFY_TO_STRING_NAME to_string
+#endif
+
+#endif
