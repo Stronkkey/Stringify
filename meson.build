@@ -15,7 +15,7 @@ project_target = shared_library(
   include_directories: public_headers
 )
 
-_ = [project_target]
+_ = project_target
 
 project_dependency = declare_dependency(
   include_directories: public_headers
@@ -29,11 +29,4 @@ pkg_mod.generate(
   filebase : meson.project_name(),
   description : project_description,
   subdirs : meson.project_name(),
-)
-
-exe = executable(
-  meson.project_name(),
-  files('main.cpp'),
-  dependencies: [],
-  install: false
 )
