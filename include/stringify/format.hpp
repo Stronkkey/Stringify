@@ -1,7 +1,7 @@
 #ifndef __STRINGIFY_FORMAT_HPP__
 #define __STRINGIFY_FORMAT_HPP__
 
-#include <stringify/partial_to_string.hpp>
+#include <stringify/to_string.hpp>
 
 #include <array>
 
