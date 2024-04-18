@@ -471,6 +471,10 @@ struct __to_string_operator__ {
 
 struct __to_strings_operator__ {
 	__to_string_operator__ __op;
+	String &string;
+
+	__to_strings_operator__(): __op(), string(__op.string) {
+	}
 
 	template<class T>
 	__to_strings_operator__ operator<<(const T &t) {
