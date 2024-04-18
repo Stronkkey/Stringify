@@ -5,8 +5,7 @@
 #error Include stringify_to_string.hpp before including this file.
 #endif
 
-#include <include/detail/inline_to_string.hpp>
-#include <include/partial_to_string.hpp>
+#include "../detail/inline_to_string.hpp"
 
 #include <forward_list>
 

@@ -1,9 +1,37 @@
+/*! \file string_conversion.hpp
+    \brief String conversion methods for built-in types. */
+/*
+  This is free and unencumbered software released into the public domain.
+
+  Anyone is free to copy, modify, publish, use, compile, sell, or
+  distribute this software, either in source code form or as a compiled
+  binary, for any purpose, commercial or non-commercial, and by any
+  means.
+
+  In jurisdictions that recognize copyright laws, the author or authors
+  of this software dedicate any and all copyright interest in the
+  software to the public domain. We make this dedication for the benefit
+  of the public at large and to the detriment of our heirs and
+  successors. We intend this dedication to be an overt act of
+  relinquishment in perpetuity of all present and future rights to this
+  software under copyright law.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+  OTHER DEALINGS IN THE SOFTWARE.
+
+  For more information, please refer to <https://unlicense.org>	
+*/
 #ifndef __STRINGIFY_STRING_CONVERSION_HPP__
 #define __STRINGIFY_STRING_CONVERSION_HPP__
 
-#include <include/access.hpp>
-#include <include/detail/inline_to_string.hpp>
-#include <include/partial_to_string.hpp>
+#include "../access.hpp"
+#include "inline_to_string.hpp"
+#include "../partial_to_string.hpp"
 
 #include <cmath>
 #include <cstdint>
@@ -13,50 +41,68 @@ namespace Stringify {
 
 namespace detail {
 
+/**
+* @brief Writes an integral number into a string.
+* @param length the length of the string. Can be smaller than the string length but not bigger.
+* The behavior is undefined if the string length is smaller than the length given.
+*/
 template<class T>
-constexpr void __to_10_characters__(char *first, unsigned int length, T number) noexcept {
+constexpr void __to_10_characters__(char *string, unsigned int length, T number) noexcept {
+	static_assert(std::is_integral<T>::value, "Only accepts integral types.");
 	constexpr const char digits[201] = "00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899";
 	unsigned i = length - 1;
 
 	while (number >= 100) {
 		auto const num = (number % 100) * 2;
 		number /= 100;
-		first[i] = digits[num + 1];
-		first[i - 1] = digits[num];
+		string[i] = digits[num + 1];
+		string[i - 1] = digits[num];
 		i -= 2;
 	}
 	
 	if (number >= 10) {
 	  auto const num = number * 2;
-	  first[1] = digits[num + 1];
-	  first[0] = digits[num];
+	  string[1] = digits[num + 1];
+	  string[0] = digits[num];
 	} else
-		first[0] = '0' + number;
+		string[0] = '0' + number;
 }
 
+/**
+* @brief Writes the integral part of a floating point number into a string.
+* @param length the length of the string. Can be smaller than the string length but not bigger.
+* @param number the number whose integral part will be written into the string.
+* The behavior is undefined if the string length is smaller than the length given.
+*/
 template<class T>
-inline void __to_10_charactersf__(char *first, unsigned int length, T number) noexcept {
+inline void __to_10_charactersf__(char *string, unsigned int length, T number) noexcept {
+	static_assert(std::is_floating_point<T>::value, "Only accepts floating point types.");
 	constexpr const char digits[201] = "00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899";
 	unsigned i = length - 1;
 
 	while (number >= 100) {
 		size_t num = std::fmod(number, 100) * 2;
 		number = std::trunc(number / 100);
-		first[i] = digits[num + 1];
-		first[i - 1] = digits[num];
+		string[i] = digits[num + 1];
+		string[i - 1] = digits[num];
 		i -= 2;
 	}
 	
 	if (number >= 10) {
 	  size_t num = number * 2;
-	  first[1] = digits[num + 1];
-	  first[0] = digits[num];
+	  string[1] = digits[num + 1];
+	  string[0] = digits[num];
 	} else
-		first[0] = '0' + number;
+		string[0] = '0' + number;
 }
 
+/**
+* @returns the minimum amount of characters required to store a number as a string.
+* @param base the base numeral system (e.g. 16 for hex).
+* The behavior is undefined if number is less than 0.
+*/
 template<class NumberType>
-constexpr size_t __log__(NumberType number, NumberType base = 10) {
+constexpr size_t __get_number_string_length__(NumberType number, NumberType base = 10) {
 	static_assert(std::is_arithmetic<NumberType>::value, "T must be a number type.");
 
 	size_t i = 1;
@@ -78,39 +124,48 @@ constexpr size_t __log__(NumberType number, NumberType base = 10) {
 	}
 }
 
+/**
+* @brief functions like __get_number_string_length__, but with correct behavior when using negative numbers (Adds +1 if the number is negative). 
+* @see __get_number_string_length__.
+*/
 template<class T>
 constexpr size_t __get_string_length_from_number__(T number) {
 	if (number < 0)
-		return __log__(-number) + 1;
-	return __log__(number);
+		return __get_number_string_length__(-number) + 1;
+	return __get_number_string_length__(number);
 }
 
-template<class T>
+/**
+* @brief writes a signed integer number into a string.
+* @param number the number that should be written to the string.
+* @param length the maximum amount of characters that should be written into the string.
+* The behavior is undefined if the string length is smaller than the length given.
+*/
+template<class T, typename std::enable_if<std::is_integral<T>::value, bool>::type = true>
 constexpr void __signed_number_into_string__(T number, char *string, size_t length) {
-	static_assert(std::is_integral<T>::value, "T must be an number type.");
-	static_assert(std::is_signed<T>::value, "T must be a signed number type.");
-
 	const bool is_negative = number < 0;
-
 	if (is_negative)
 		string[0] = '-';
 	
 	detail::__to_10_characters__(&string[is_negative], length, is_negative ? -number : number);
 }
 
-template<class T>
+/**
+* @brief writes an unsigned integer number into a string.
+* @param number the number that should be written to the string.
+* @param length the maximum amount of characters that should be written into the string.
+* The behavior is undefined if the string length is smaller than the length given.
+*/
+template<class T, typename std::enable_if<std::is_unsigned<T>::value, bool>::type = true>
 inline void __unsigned_number_into_string__(T number, char *string, size_t length) {
-	static_assert(std::is_integral<T>::value, "T must be an number type.");
-	static_assert(std::is_unsigned<T>::value, "T must be a unsigned number type.");
-
 	detail::__to_10_characters__(string, length, number);
 }
 
-template<class T>
+/**
+* @returns the number converted into a string.
+*/
+template<class T, typename std::enable_if<std::is_integral<T>::value, bool>::type = true>
 inline String __to_string_signed_number__(T number) {
-	static_assert(std::is_integral<T>::value, "T must be an number type.");
-	static_assert(std::is_signed<T>::value, "T must be a signed number type.");
-
 	String number_string;
 	number_string.resize(__get_string_length_from_number__(number));
 
@@ -118,11 +173,11 @@ inline String __to_string_signed_number__(T number) {
 	return number_string;
 }
 
-template<class T>
+/**
+* @returns the number converted into a string.
+*/
+template<class T, typename std::enable_if<std::is_unsigned<T>::value, bool>::type = true>
 inline String __to_string_unsigned_number__(T number) {
-	static_assert(std::is_integral<T>::value, "T must be an number type.");
-	static_assert(std::is_unsigned<T>::value, "T must be a unsigned number type.");
-
 	String number_string;
 	number_string.resize(__get_string_length_from_number__(number));
 
@@ -130,6 +185,9 @@ inline String __to_string_unsigned_number__(T number) {
 	return number_string;
 }
 
+/**
+* @brief equivalent to pow(10, exponent).
+*/
 constexpr size_t __pow_10__(size_t exponent) {
 	size_t pow_of_10 = 10;
 
@@ -139,6 +197,9 @@ constexpr size_t __pow_10__(size_t exponent) {
 	return pow_of_10;
 }
 
+/**
+* @returns the amount of characters required to store the number into a string.
+*/
 template<class FloatType>
 constexpr size_t __get_string_length_from_float__(FloatType number, size_t decimal_places = 6) {
 	using __numeric_limits__ = std::numeric_limits<FloatType>;
@@ -154,11 +215,18 @@ constexpr size_t __get_string_length_from_float__(FloatType number, size_t decim
 	return __get_string_length_from_number__(integral_part) + (number < 0) + decimal_places + 1;
 }
 
+/**
+* @brief copies source into destionation.
+*/
 constexpr void __str_copy__(const char *source, char *destination) {
 	for (size_t i = 0; source[i] != '\0'; i++)
 		destination[i] = source[i];
 }
 
+/**
+* @brief writes a number into a string.
+* @param
+*/
 template<class FloatType>
 inline void __float_number_into_string__(FloatType number, char *string, size_t decimal_places = 6) {
 	using __numeric_limits__ = std::numeric_limits<FloatType>;
@@ -215,7 +283,7 @@ inline String __to_string_float_number__(FloatType number) {
 
 template<class NumberType>
 inline size_t __get_hex_int_string_size__(NumberType number) {
-	return __log__(static_cast<uint_fast64_t>(number), static_cast<uint_fast64_t>(16));
+	return __get_number_string_length__(static_cast<uint_fast64_t>(number), static_cast<uint_fast64_t>(16));
 }
 
 template<class IntegerType>

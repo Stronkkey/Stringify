@@ -1,8 +1,8 @@
 #ifndef __STRINGIFY_TO_STRING_HPP__
 #define __STRINGIFY_TO_STRING_HPP__
 
-#include <include/detail/string_conversion.hpp>
-#include <include/access.hpp>
+#include "detail/string_conversion.hpp"
+#include "access.hpp"
 
 #define S_TO_STRING(...) ::Stringify::to_string(__VA_ARGS__)
 #define S_TO_STRINGS(...) ::Stringify::to_strings(__VA_ARGS__)

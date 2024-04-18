@@ -5,12 +5,18 @@
 #error Include stringify_to_string.hpp before including this file.
 #endif
 
-#include <include/detail/inline_to_string.hpp>
-#include <include/partial_to_string.hpp>
+#include "../string.hpp"
 
 #include <initializer_list>
 
 namespace Stringify {
+
+namespace detail {
+
+template<class T>
+extern String __to_string_generic_iterator_container__(const T&);
+
+}
 
 template<class T>
 String to_string(const std::initializer_list<T> &initializer_list) {

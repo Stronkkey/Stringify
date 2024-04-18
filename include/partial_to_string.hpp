@@ -1,7 +1,7 @@
 #ifndef __STRINGIFY_PARTIAL_TO_STRING_HPP__
 #define __STRINGIFY_PARTIAL_TO_STRING_HPP__
 
-#include <include/string.hpp>
+#include "string.hpp"
 
 namespace Stringify {
 
