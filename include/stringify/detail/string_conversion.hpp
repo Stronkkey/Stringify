@@ -458,12 +458,14 @@ struct __to_string_operator__ {
 	String string = "";
 
 	template<class T>
-	void operator<<(const T &t) {
+	__to_string_operator__ &operator<<(const T &t) {
 		string += to_string(t);
+		return *this;
 	}
 
-	void operator<<(const String &string) {
+	__to_string_operator__ &operator<<(const String &string) {
 		this->string += string;
+		return *this;
 	}
 };
 
@@ -471,9 +473,10 @@ struct __to_strings_operator__ {
 	__to_string_operator__ __op;
 
 	template<class T>
-	void operator<<(const T &t) {
+	__to_strings_operator__ operator<<(const T &t) {
 		__op << t;
 		__op.string += ' ';
+		return *this;
 	}
 };
 	

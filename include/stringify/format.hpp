@@ -18,13 +18,15 @@ struct __op_string_array__ {
 	size_t i;
 
 	template<class T>
-	void operator<<(const T &object) {
+	__op_string_array__ &operator<<(const T &object) {
 		array[i++] = to_string(object);
+		return *this;
 	}
 
-	void operator<<(const String &string) {
+	__op_string_array__ &operator<<(const String &string) {
 		const char *c_string = string.data();
 		array[i++] = String(c_string, string.size());
+		return *this;
 	}
 };
 
