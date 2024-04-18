@@ -3,12 +3,21 @@
 
 #ifndef STRINGIFY_STRING_TYPE
 #include <string>
-#define STRINGIFY_STRING_TYPE std::string
+#define STRINGIFY_STRING_TYPE ::std::string
+#endif
+
+#ifndef STRINGIFY_STRING_VIEW_TYPE
+#if __cplusplus >= 201703L
+#define STRINGIFY_STRING_VIEW_TYPE ::std::basic_string_view<STRINGIFY_STRING_TYPE::value_type>
+#else
+#define STRSTRINGIFY_STRING_VIEW_TYPE STRINGIFY_STRING_TYPE
+#endif
 #endif
 
 namespace Stringify {
 
 using String = STRINGIFY_STRING_TYPE;
+using StringView = STRINGIFY_STRING_VIEW_TYPE;
 
 }
 
