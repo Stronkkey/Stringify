@@ -5,7 +5,7 @@
 #error Include stringify_to_string.hpp before including this file.
 #endif
 
-#include "../detail/inline_to_string.hpp"
+#include <stringify/detail/inline_to_string.hpp>
 
 #include <utility>
 

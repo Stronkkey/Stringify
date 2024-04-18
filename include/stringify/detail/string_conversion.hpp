@@ -29,9 +29,9 @@
 #ifndef __STRINGIFY_STRING_CONVERSION_HPP__
 #define __STRINGIFY_STRING_CONVERSION_HPP__
 
-#include "../access.hpp"
-#include "inline_to_string.hpp"
-#include "../partial_to_string.hpp"
+#include <stringify/access.hpp>
+#include <stringify/detail/inline_to_string.hpp>
+#include <stringify/partial_to_string.hpp>
 
 #include <cmath>
 #include <cstdint>

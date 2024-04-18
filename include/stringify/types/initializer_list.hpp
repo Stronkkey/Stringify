@@ -5,7 +5,7 @@
 #error Include stringify_to_string.hpp before including this file.
 #endif
 
-#include "../string.hpp"
+#include <stringify/string.hpp>
 
 #include <initializer_list>
 

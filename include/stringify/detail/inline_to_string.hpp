@@ -29,7 +29,7 @@
 #ifndef __STRINGIFY_INLINE_TO_STRING_HPP__
 #define __STRINGIFY_INLINE_TO_STRING_HPP__
 
-#include "../string.hpp"
+#include <stringify/string.hpp>
 
 namespace Stringify {
 

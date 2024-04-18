@@ -1,9 +1,9 @@
 #ifndef __STRINGIFY_ACCESS_HPP__
 #define __STRINGIFY_ACCESS_HPP__
 
-#include "function_macros.hpp"
-#include "string.hpp"
-#include "detail/detection.hpp"
+#include <stringify/function_macros.hpp>
+#include <stringify/string.hpp>
+#include <stringify/detail/detection.hpp>
 
 #include <utility>
 
