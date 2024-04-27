@@ -34,3 +34,10 @@
 # Build files and code editors
 .cache
 .vscode
+
+
+
+# misc files mostly used for testing
+doc/html
+doc/latex
+build
