@@ -1,10 +1,10 @@
 project(
   'stringify',
   'cpp',
-  version : '1.0.0',
+  version : '1.1.0',
   default_options : ['warning_level=0', 'cpp_std=c++14'])
 
-project_description = 'A header only string conversion library'
+project_description = 'C++14 header only string library'
 
 public_headers = include_directories('include')
 

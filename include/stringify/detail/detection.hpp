@@ -1,5 +1,5 @@
-/*! \file detection.hpp
-    \brief Implementation of std::experimental::detected. */
+/** @file detection.hpp
+    @brief Implementation of std::experimental::detected. */
 /*
   This is free and unencumbered software released into the public domain.
 

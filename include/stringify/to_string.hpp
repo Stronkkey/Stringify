@@ -2,165 +2,298 @@
 #define __STRINGIFY_TO_STRING_HPP__
 
 #include <stringify/detail/string_conversion.hpp>
+#include <stringify/detail/base_inline_string.hpp>
 #include <stringify/access.hpp>
 
 #define S_TO_STRING(...) ::Stringify::to_string(__VA_ARGS__)
 #define S_TO_STRINGS(...) ::Stringify::to_strings(__VA_ARGS__)
+#define S_TO_STRING_N(...) ::Stringify::to_string_n(__VA_ARGS__)
+#define S_TO_STRINGS_N(...) ::Stringify::to_strings_n(__VA_ARGS__)
 
 namespace Stringify {
 
+/**
+* @returns true if the type T can be converted to a string.
+*/
+template<class T>
+constexpr bool is_convertable_to_string() {
+	if (std::is_arithmetic<T>::value)
+		return true;
+
+	if (std::is_array<T>::value)
+		return true;
+
+	if (detail::__inline_to_string_defined__<T>())
+		return true;
+
+	if (Access::type_t_has_to_string_function<T>())
+		return true;
+
+	if (Access::type_t_has_operator_string<T>())
+		return true;
+
+	return std::is_pointer<T>::value;
+}
+
 namespace detail {
 
-template<bool>
-struct __conditional_reinterpret_cast__;
+struct __to_string_operator__ {
+	String string = "";
 
-template<>
-struct __conditional_reinterpret_cast__<false> {
 	template<class T>
-	static uintptr_t __reinterpret__(const T&) {
-		return 0;
+	__to_string_operator__ &operator<<(const T &t) {
+		string += to_string(t);
+		return *this;
+	}
+
+	__to_string_operator__ &operator<<(const String &string) {
+		this->string += string;
+		return *this;
 	}
 };
 
-template<>
-struct __conditional_reinterpret_cast__<true> {
+struct __to_string_n_operator__ {
+	String string = "";
+
 	template<class T>
-	static uintptr_t __reinterpret__(const T &t) {
-		return reinterpret_cast<uintptr_t>(t);
+	__to_string_n_operator__ &operator<<(const T &t) {
+		if (is_convertable_to_string<T>())
+			string += to_string_n(t);
+		return *this;
+	}
+
+	__to_string_n_operator__ &operator<<(const String &string) {
+		this->string += string;
+		return *this;
 	}
 };
 
-template<bool>
-struct __call_to_string__;
+template<class _Operator>
+struct __to_string_operator_g__ {
+	_Operator __op;
+	String &string;
 
-template<>
-struct __call_to_string__<false> {
-	template<class T>
-	static inline String __get_string__(const T&) {
-		return {};
+	__to_string_operator_g__(): __op(), string(__op.string) {
 	}
 };
 
-template<>
-struct __call_to_string__<true> {
+template<class _Operator>
+struct __to_strings_operator__ : public __to_string_operator_g__<_Operator> {
 	template<class T>
-	static inline String __get_string__(const T &object) {
-		return Access::__object_to_string__(object);
+	__to_strings_operator__ &operator<<(const T &t) {
+		if (is_convertable_to_string<T>()) {
+			this->__op << t;
+			this->__op.string += ' ';
+		}
+		return *this;
+	}
+};
+
+#if __cplusplus >= 201703L
+
+template<class _Operator, class T, class... Args>
+String __operator_string_vararg__(const T &variant, Args&&... args) {
+	_Operator __op;
+
+	__op.string = "";
+	__op << variant;
+	(__op << ... << args);
+
+	return __op.string;
+}
+
+#endif
+
+template<class T>
+String __string_vararg__(const T &variant) {
+	return to_string(variant);
+}
+
+template<class T, class... Args>
+String __string_vararg__(const T &variant, Args&&... args) {
+	return __string_vararg__(variant) + __string_vararg__(args...);
+}
+
+template<class T>
+String __strings_vararg__(const T &variant) {
+	return to_string(variant) + ' ';
+}
+
+template<class T, class... Args>
+String __strings_vararg__(const T &variant, Args&&... args) {
+	return __strings_vararg__(variant) + __strings_vararg__(args...);
+}
+
+template<class T>
+String __string_n_vararg__(const T &variant) {
+	return to_string_n(variant);
+}
+
+template<class T, class... Args>
+String __string_n_vararg__(const T &variant, Args&&... args) {
+	return __string_n_vararg__(variant) + __string_n_vararg__(args...);
+}
+
+template<class T>
+String __strings_n_vararg__(const T &variant) {
+	return to_string_n(variant) + ' ';
+}
+
+template<class T, class... Args>
+String __strings_n_vararg__(const T &variant, Args&&... args) {
+	return __strings_n_vararg__(variant) + __strings_n_vararg__(args...);
+}
+
+template<class T, class... Args>
+inline String __get_vararg_string__(const T &variant, Args&&... args) {
+	#if __cplusplus >= 201703L
+	return __operator_string_vararg__<__to_string_operator__>(variant, args...);
+	#else
+	return __string_vararg__(variant, args...);
+	#endif
+
+	return "";
+}
+
+template<class T, class... Args>
+inline String __get_vararg_strings__(const T &variant, Args&&... args) {
+	#if __cplusplus >= 201703L
+	return __operator_string_vararg__<__to_strings_operator__<__to_string_operator__>>(variant, args...);
+	#else
+	return __strings_vararg__(variant, args...);
+	#endif
+
+	return "";
+}
+
+template<class T, class... Args>
+inline String __get_vararg_string_n__(const T &variant, Args&&... args) {
+	#if __cplusplus >= 201703L
+	return __operator_string_vararg__<__to_string_n_operator__>(variant, args...);
+	#else
+	return __string_n_vararg__(variant, args...);
+	#endif
+
+	return "";
+}
+
+template<class T, class... Args>
+inline String __get_vararg_strings_n__(const T &variant, Args&&... args) {
+	#if __cplusplus >= 201703L
+	return __operator_string_vararg__<__to_strings_operator__<__to_string_n_operator__>>(variant, args...);
+	#else
+	return __strings_n_vararg__(variant, args...);
+	#endif
+
+	return "";
+}
+
+
+}
+
+namespace detail {
+
+template<class T>
+constexpr __to_string_conversion_options__ __get_string_conversion_option_from_t__() {	
+	if (__inline_to_string_defined__<T>())
+		return __to_string_conversion_options__::__INLINE_STRING__;
+
+	if (std::is_array<T>::value)
+		return __to_string_conversion_options__::__ARRAY__;
+
+	if (std::is_pointer<T>::value)
+		return __to_string_conversion_options__::__POINTER__;
+
+	if (std::is_arithmetic<T>::value)
+		return __to_string_conversion_options__::__ARITHMETIC__;
+
+	if (Access::type_t_has_to_string_function<T>())
+		return __to_string_conversion_options__::__TO_STRING_FUNC__;
+
+	if (Access::type_t_has_operator_string<T>())
+		return __to_string_conversion_options__::__OPERATOR_STRING__;
+
+	return __to_string_conversion_options__::__NONE__;
+}
+
+__STRINGIFY_DETAIL_DEF_CONVERSION_OPTIONS__(__to_string_conversion_options__::__ARITHMETIC__) {
+	return detail::__to_string_number__(object);
+}
+
+__STRINGIFY_DETAIL_DEF_CONVERSION_OPTIONS__(__to_string_conversion_options__::__POINTER__) {
+	return detail::__to_string_int_hex__(reinterpret_cast<uintptr_t>(object));
+}
+
+__STRINGIFY_DETAIL_DEF_CONVERSION_OPTIONS__(__to_string_conversion_options__::__TO_STRING_FUNC__) {
+	return Access::__object_to_string__(object);
+}
+
+__STRINGIFY_DETAIL_DEF_CONVERSION_OPTIONS__(__to_string_conversion_options__::__OPERATOR_STRING__) {
+	return Access::__object_string_operator__(object);
+}
+
+__STRINGIFY_DETAIL_DEF_CONVERSION_OPTIONS__(__to_string_conversion_options__::__INLINE_STRING__) {
+	return detail::__inline_to_string__<T>::__to_string__(object);
+}
+
+template<class T, size_t N>
+struct __inline_to_string__<T[N]> : std::true_type {
+	constexpr static bool defined = true;
+	inline static String __to_string__(const T variant[N]) {
+		return __to_string_index_container__(variant, N);
+	}
+};
+
+template<size_t N>
+struct __inline_to_string__<char[N]> : std::true_type {
+	constexpr static bool defined = true;
+	inline static String __to_string__(const char string[N]) {
+		return String(string);
+	}
+};
+
+template<size_t N>
+struct __inline_to_string__<const char[N]> : std::true_type {
+	constexpr static bool defined = true;
+	inline static String __to_string__(const char string[N]) {
+		return String(string);
 	}
 };
 
 }
 
 /**
-* Tries to convert the object into a string.
-* This function succedes if any one of these requirements are met. 
-* 1. T is char[] or char[N].
-* 2. T is a pointer type.
-* 3. T can be converted to the String type implicitly.
-* An error is generated if none of the requirements could be met.
+* @returns the integer converted into a hexidecimal string.
+* @note the hexidecimal is big-endianess.
 */
-template<class T>
-inline String to_string(const T &object) {
-	static_assert(detail::__can_t_be_converted_to_string__<T>(), "Cannot convert type T to a String.");
-
-	if (std::is_array<T>::value)
-		return detail::__string_array__<T>::__get_string__(object);
-
-	if (std::is_pointer<T>::value)
-		return detail::__to_string_int_hex__(detail::__conditional_reinterpret_cast__<std::is_pointer<T>::value>::__reinterpret__(object));
-
-	if (Access::type_t_has_to_string_function<T>())
-		return detail::__call_to_string__<Access::type_t_has_to_string_function<T>()>::__get_string__(object);
-
-	if (Access::type_t_has_operator_string<T>())
-		return detail::__explicitly_convertible_to_string__<Access::type_t_has_operator_string<T>()>::__convert_to_string__(object);
-
-	if (detail::__is_inline_to_string_defined__<T>())
-		return detail::__inline_to_string__<T>::__to_string__(object);
-
-	return detail::__inline_to_string__<T>::__to_string__(object);
-}
-
-inline String to_string(signed char number) {
-	return detail::__to_string_signed_number__(number);
-}
-
-inline String to_string(unsigned char number) {
-	return detail::__to_string_unsigned_number__(number);
-}
-
-inline String to_string(short number) {
-	return detail::__to_string_signed_number__(number);
-}
-
-inline String to_string(unsigned short number) {
-	return detail::__to_string_unsigned_number__(number);
-}
-
-inline String to_string(int number) {
-	return detail::__to_string_signed_number__(number);
-}
-
-inline String to_string(unsigned int number) {
-	return detail::__to_string_unsigned_number__(number);
-}
-
-inline String to_string(long number) {
-	return detail::__to_string_signed_number__(number);
-}
-
-inline String to_string(unsigned long number) {
-	return detail::__to_string_unsigned_number__(number);
-}
-
-inline String to_string(long long number) {
-	return detail::__to_string_signed_number__(number);
-}
-
-inline String to_string(unsigned long long number) {
-	return detail::__to_string_unsigned_number__(number);
-}
-
-inline String to_string(float number) {
-	return detail::__to_string_float_number__(number);
-}
-
-inline String to_string(double number) {
-	return detail::__to_string_float_number__(number);
-}
-
-inline String to_string(long double number) {
-	return detail::__to_string_float_number__(number);
-}
-
-inline String to_string(bool boolean) {
-	return boolean ? "true" : "false";
-}
-
-inline String to_string(char character) {
-	return String(&character, 1);
-}
-
-inline String to_string(char *string) {
-	return String(string);
-}
-
-inline String to_string(const char *string) {
-	return String(string);
-}
-
-template<class IntegerType>
+template<class IntegerType, typename std::enable_if<std::is_integral<IntegerType>::value, bool>::type = true>
 inline String to_string_hex_integer(IntegerType integer) {
-	static_assert(std::is_integral<IntegerType>::value, "IntegerType is not an integral type.");
-
 	if (integer < 0)
 		return detail::__to_string_int_hex__(static_cast<typename std::make_unsigned<IntegerType>::type>(integer));
 
 	return detail::__to_string_int_hex__(integer);
 }
 
+/**
+* @returns the object converted into a string.
+* Users may define their own string conversion by adding an operator String or to_string function to their class.
+* String conversion methods may also be included from the types directory.
+* An error is generated if object cannot be converted to a string.
+*/
+template<class T>
+inline String to_string(const T &object) {
+	static_assert(is_convertable_to_string<T>(), "Cannot convert type T to a String.");
+
+	return detail::__to_string_option__<detail::__get_string_conversion_option_from_t__<T>()>::__call__(object);
+}
+
+/**
+* @returns the objects converted into a string.
+* @note no spaces are added between the objects.
+* Generates an error if any one of the objects cannot be converted to a string.
+*/
 template<class T, class... Args>
-inline String to_string(const T &object, const Args&... args) {
+inline String to_string(const T &object, Args&&... args) {
 	return detail::__get_vararg_string__(object, args...);
 }
 
@@ -170,8 +303,41 @@ inline String to_strings(const T &object) {
 }
 
 template<class T, class... Args>
-inline String to_strings(const T &object, const Args&... args) {
+inline String to_strings(const T &object, Args&&... args) {
 	return detail::__get_vararg_strings__(object, args...);
+}
+
+
+/**
+* @returns the object converted to a string, or an empty string if it cannot be converted.
+* @see to_string.
+*/
+template<class T>
+inline String to_string_n(const T &object) {
+	return detail::__to_string_option__<detail::__get_string_conversion_option_from_t__<T>()>::__call__(object);
+}
+
+/**
+* @returns the objects converted to a string.
+* @see to_string.
+* Objects which cannot be converted are ignored.
+*/
+template<class T, class... Args>
+inline String to_string_n(const T &object, Args&&... args) {
+	return detail::__get_vararg_string_n__(object, args...);
+}
+
+/**
+* @brief Acts excatly like to_string_n.
+*/
+template<class T>
+inline String to_strings_n(const T &object) {
+	return detail::__to_string_option__<detail::__get_string_conversion_option_from_t__<T>()>::__call__(object);
+}
+
+template<class T, class... Args>
+inline String to_strings_n(const T &object, Args&&... args) {
+	return detail::__get_vararg_strings_n__(object, args...);
 }
 
 };
