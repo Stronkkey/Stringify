@@ -1,5 +1,5 @@
-/** @file vector.hpp
-    @brief String conversion methods for types provided in <vector>. */
+/** @file base_inline_string.hpp
+    @brief String conversion methods for string and character types. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -26,20 +26,40 @@
 
   For more information, please refer to <https://unlicense.org>	
 */
-#ifndef __STRINGIFY_VECTOR_HPP__
-#define __STRINGIFY_VECTOR_HPP__
+#ifndef __STRINGIFY_BASE_INLINE_STRING_HPP__
+#define __STRINGIFY_BASE_INLINE_STRING_HPP__
 
-#include <stringify/detail/container_string_conversion.hpp>
-
-#include <vector>
+#include <stringify/detail/inline_to_string.hpp>
 
 namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::vector, vector, T, class T, Allocator, class Allocator) {
-	return __to_string_iterator_container__(vector);
+__STRINGIFY_DETAIL_TO_STRING_TYPE__(char, character) {
+	return String(1, character);
 }
+
+__STRINGIFY_DETAIL_TO_STRING_TYPE__(bool, boolean) {
+	return boolean ? "true" : "false";
+}
+
+__STRINGIFY_DETAIL_TO_STRING_TYPE__(String, string) {
+	return string;
+}
+
+template<>
+struct __inline_to_string__<char*> : std::true_type {	
+	static inline String __to_string__(char *string) {
+		return String(reinterpret_cast<const char*>(string));
+	}
+};
+
+template<>
+struct __inline_to_string__<const char*> : std::true_type {	
+	static inline String __to_string__(const char *string) {
+		return String(string);
+	}
+};
 
 }
 
