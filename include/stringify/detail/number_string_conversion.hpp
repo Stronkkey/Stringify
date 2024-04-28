@@ -230,7 +230,7 @@ inline void __number_into_string__(FloatType number, char *string, size_t decima
 	const bool is_negative = number < 0;
 	FloatType integral_part = is_negative ? std::trunc(-number) : std::trunc(number);
 	const FloatType decimals = (is_negative ? -number : number) - integral_part;
-	size_t integral_length = __get_string_length_from_number__(integral_part, 10.0, 0) - 1;
+	size_t integral_length = __get_string_length_from_number__(integral_part, static_cast<FloatType>(10), 0) - 1;
 	size_t pos = 0;
 
 	if (is_negative)
@@ -242,7 +242,7 @@ inline void __number_into_string__(FloatType number, char *string, size_t decima
 	string[pos++] = '.';
 
 	const FloatType integral_decimals = decimals * __pow_10__(decimal_places);
-	const size_t integral_decimals_length = __get_string_length_from_number__(integral_decimals, 10.0, 0) - 1;
+	const size_t integral_decimals_length = __get_string_length_from_number__(integral_decimals, static_cast<FloatType>(10), 0) - 1;
 	__to_10_characters__(&string[pos], integral_decimals_length, integral_decimals);
 
 	pos += integral_decimals_length;
