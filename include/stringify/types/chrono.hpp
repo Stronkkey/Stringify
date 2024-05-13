@@ -1,5 +1,5 @@
 /** @file chrono.hpp
-    @brief String conversion methods for types provided in <chrono>. */
+    @brief String conversion methods for types provided in \<chrono>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,39 +29,46 @@
 #ifndef __STRINGIFY_CHRONO_HPP__
 #define __STRINGIFY_CHRONO_HPP__
 
-#include <stringify/detail/number_string_conversion.hpp>
-#include <stringify/partial_to_string.hpp>
+#include <stringify/detail/convert_type.hpp>
 
 #include <chrono>
-
 #include <iomanip>
-#include <sstream>
 
 namespace Stringify {
 
-inline String to_string_time_t(const std::time_t &time, const std::locale &locale = std::locale(), const char *format = "%c") {
-	std::basic_stringstream<String::value_type> string_stream = {};
-
-	string_stream.imbue(locale);
-	string_stream << std::put_time(std::localtime(&time), format);
-
-	return string_stream.str();
+/**
+* @brief Puts the time into the stream.
+* @see https://en.cppreference.com/w/cpp/io/manip/put_time.
+*/
+inline void time_t_into_stream(std::ostream &stream, const std::time_t &time, const char *format = "%c") {
+	stream << std::put_time(std::localtime(&time), format);
 }
 
+/**
+* @brief Puts the time point into the stream.
+* @see time_t_into_stream.
+*/
 template<class Clock, class Duration>
-inline String time_point_chrono_to_string(const std::chrono::time_point<Clock, Duration> &time_point, const std::locale &locale = std::locale(), const char *format = "%c") {
-	return to_string_time_t(std::chrono::system_clock::to_time_t(time_point), locale, format);
+void chrono_time_point_into_stream(std::ostream &stream, const std::chrono::time_point<Clock, Duration> &time_point, const char *format = "%c") {
+	time_t_into_stream(stream, std::chrono::system_clock::to_time_t(time_point), format);
 }
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::chrono::duration, duration, Rep, class Rep, Period, class Period) {
-	return detail::__to_string_number__(static_cast<double>(duration.count()) / Period::den) + 's';
-}
+template<class Rep, class Period>
+struct convert_type<std::chrono::duration<Rep, Period>> {
+	void operator()(std::ostream &stream, const std::chrono::duration<Rep, Period> &duration) {
+		stream << static_cast<double>(duration.count()) / Period::den;
+		stream << 's';
+	}
+};
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::chrono::time_point, time_point, Clock, class Clock, Duration, class Duration) {
-	return time_point_chrono_to_string(time_point);
-}
+template<class Clock, class Duration>
+struct convert_type<std::chrono::time_point<Clock, Duration>> {
+	void operator()(std::ostream &stream, const std::chrono::time_point<Clock, Duration> &time_point) {
+		chrono_time_point_into_stream(stream, time_point);
+	}
+};
 
 }
 

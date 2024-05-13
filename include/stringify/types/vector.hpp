@@ -1,5 +1,5 @@
 /** @file vector.hpp
-    @brief String conversion methods for types provided in <vector>. */
+    @brief String conversion methods for types provided in \<vector>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,8 @@
 #ifndef __STRINGIFY_VECTOR_HPP__
 #define __STRINGIFY_VECTOR_HPP__
 
-#include <stringify/detail/container_string_conversion.hpp>
+#include <stringify/detail/container_streaming.hpp>
+#include <stringify/detail/convert_type.hpp>
 
 #include <vector>
 
@@ -37,9 +38,12 @@ namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::vector, vector, T, class T, Allocator, class Allocator) {
-	return __to_string_iterator_container__(vector);
-}
+template<class T, class Allocator>
+struct convert_type<std::vector<T, Allocator>> {
+	void operator()(std::ostream &stream, const std::vector<T, Allocator> &vector) {
+		stream_container(stream, vector);
+	}
+};
 
 }
 

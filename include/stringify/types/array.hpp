@@ -1,5 +1,5 @@
 /** @file array.hpp
-    @brief String conversion methods for types provided in <array>. */
+    @brief Streaming methods for types provided in \<array>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,8 @@
 #ifndef __STRINGIFY_ARRAY_HPP__
 #define __STRINGIFY_ARRAY_HPP__
 
-#include <stringify/detail/container_string_conversion.hpp>
+#include <stringify/detail/convert_type.hpp>
+#include <stringify/detail/container_streaming.hpp>
 
 #include <array>
 
@@ -37,9 +38,12 @@ namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::array, array, T, class T, N, size_t N) {
-	return __to_string_index_container__(array, N);
-}
+template<class T, size_t N>
+struct convert_type<std::array<T, N>> {
+	void operator()(std::ostream &stream, const std::array<T, N> &array) {
+		stream_index_container(stream, array, N);
+	}
+};
 
 }
 

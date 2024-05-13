@@ -1,5 +1,5 @@
 /** @file memory.hpp
-    @brief String conversion methods for types provided in <memory>. */
+    @brief String conversion methods for types provided in \<memory>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,25 +29,47 @@
 #ifndef __STRINGIFY_MEMORY_HPP__
 #define __STRINGIFY_MEMORY_HPP__
 
-#include <stringify/partial_to_string.hpp>
+#include <stringify/detail/convert_type.hpp>
 
+#include <ostream>
 #include <memory>
 
 namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE1__(std::shared_ptr, shared_ptr, T, class T) {
-	return to_string(shared_ptr.get());
-}
+template<class T>
+struct convert_type<std::shared_ptr<T>> {
+	void operator()(std::ostream &stream, const std::shared_ptr<T> &shared_ptr) {
+		std::ios_base::fmtflags flags = stream.flags();
+		stream << std::hex;
+		stream << reinterpret_cast<uintptr_t>(shared_ptr.get());
+		stream.setf(flags);
+	}
+};
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE1__(std::unique_ptr, unique_ptr, T, class T) {
-	return to_string(unique_ptr.get());
-}
+template<class T>
+struct convert_type<std::unique_ptr<T>> {
+	void operator()(std::ostream &stream, const std::unique_ptr<T> &unique_ptr) {
+		std::ios_base::fmtflags flags = stream.flags();
+		stream << std::hex;
+		stream << reinterpret_cast<uintptr_t>(unique_ptr.get());
+		stream.setf(flags);
+	}
+};
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE1__(std::weak_ptr, weak_ptr, T, class T) {
-	return to_string(weak_ptr.lock().get());
-}
+template<class T>
+struct convert_type<std::weak_ptr<T>> {
+	void operator()(std::ostream &stream, const std::weak_ptr<T> &weak_ptr) {
+		std::ios_base::fmtflags flags = stream.flags();
+		stream << std::hex;
+		if (!weak_ptr.expired())
+			stream << reinterpret_cast<uintptr_t>(weak_ptr.lock().get());
+		else
+			stream << static_cast<uintptr_t>(0);
+		stream.setf(flags);
+	}
+};
 
 }
 
