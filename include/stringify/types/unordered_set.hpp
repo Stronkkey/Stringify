@@ -1,5 +1,5 @@
 /** @file unordered_set.hpp
-    @brief String conversion methods for types provided in <unordered_set>. */
+    @brief String conversion methods for types provided in \<unordered_set>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,8 @@
 #ifndef __STRINGIFY_UNORDERED_SET_HPP__
 #define __STRINGIFY_UNORDERED_SET_HPP__
 
-#include <stringify/detail/container_string_conversion.hpp>
+#include <stringify/detail/container_streaming.hpp>
+#include <stringify/detail/convert_type.hpp>
 
 #include <unordered_set>
 
@@ -37,9 +38,12 @@ namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE4__(std::unordered_set, unordered_set, Value, class Value, Hash, class Hash, Pred, class Pred, Allocator, class Allocator) {
-	return __to_string_index_container__(unordered_set);
-}
+template<class Key, class Value, class Pred, class Allocator>
+struct convert_type<std::unordered_set<Key, Value, Pred, Allocator>> {
+	void operator()(std::ostream &stream, const std::unordered_set<Key, Value, Pred, Allocator> &unordered_set) {
+		stream_container(stream, unordered_set);
+	}
+};
 
 }
 

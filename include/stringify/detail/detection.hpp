@@ -1,5 +1,7 @@
-/** @file detection.hpp
-    @brief Implementation of std::experimental::detected. */
+/** @ingroup Internal
+    @file detection.hpp
+    @brief Implementation of std::experimental::detected.
+    @see https://en.cppreference.com/w/cpp/experimental/is_detected */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -35,8 +37,6 @@ namespace Stringify {
 
 namespace detail {
 
-// See https://en.cppreference.com/w/cpp/experimental/is_detected.
-
 namespace detection {
 
 template< class... >
@@ -59,7 +59,7 @@ struct __detector__<Default, void_type<Op<Args...>>, Op, Args...> {
 	using value_type = std::true_type;
 	using type = Op<Args...>;
 };
- 
+
 template<template<class...> class Op, class... Args>
 using is_detected = typename __detector__<nonesuch, void, Op, Args...>::value_type;
  

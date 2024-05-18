@@ -1,5 +1,5 @@
-/** @file base_inline_string.hpp
-    @brief String conversion methods for string and character types. */
+/** @file partial_streaming.hpp
+    @brief Partial definitions of streaming.hpp. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -26,42 +26,40 @@
 
   For more information, please refer to <https://unlicense.org>	
 */
-#ifndef __STRINGIFY_BASE_INLINE_STRING_HPP__
-#define __STRINGIFY_BASE_INLINE_STRING_HPP__
+#ifndef __STRINGIFY_PARTIAL_STREAMING_HPP__
+#define __STRINGIFY_PARTIAL_STREAMING_HPP__
 
-#include <stringify/detail/inline_to_string.hpp>
+#include <iosfwd>
 
 namespace Stringify {
 
-namespace detail {
+template<class T>
+constexpr bool is_streamable();
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE__(char, character) {
-	return String(1, character);
-}
+template<class T>
+void write_into_stream(std::ostream &stream, const T &object);
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE__(bool, boolean) {
-	return boolean ? "true" : "false";
-}
+template<class T, class... Args>
+void write_into_stream(std::ostream &stream, const T &object, Args&&... args);
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE__(String, string) {
-	return string;
-}
+template<class T>
+void write_into_streams(std::ostream &stream, const T &object);
 
-template<>
-struct __inline_to_string__<char*> : std::true_type {	
-	static inline String __to_string__(char *string) {
-		return String(reinterpret_cast<const char*>(string));
-	}
-};
+template<class T, class... Args>
+void write_into_streams(std::ostream &stream, const T &object, Args&&... args);
 
-template<>
-struct __inline_to_string__<const char*> : std::true_type {	
-	static inline String __to_string__(const char *string) {
-		return String(string);
-	}
-};
+template<class T>
+void write_into_streamn(std::ostream &stream, const T &object);
 
-}
+template<class T, class... Args>
+void write_into_streamn(std::ostream &stream, const T &object, Args&&... args);
+
+template<class T>
+void write_into_streamsn(std::ostream &stream, const T &object);
+
+template<class T, class... Args>
+void write_into_streamsn(std::ostream &stream, const T &object, Args&&... args);
+
 
 }
 

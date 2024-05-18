@@ -1,5 +1,5 @@
 /** @file list.hpp
-    @brief String conversion methods for types provided in <list>. */
+    @brief String conversion methods for types provided in \<list>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,8 @@
 #ifndef __STRINGIFY_LIST_HPP__
 #define __STRINGIFY_LIST_HPP__
 
-#include <stringify/detail/container_string_conversion.hpp>
+#include <stringify/detail/convert_type.hpp>
+#include <stringify/detail/container_streaming.hpp>
 
 #include <list>
 
@@ -37,9 +38,12 @@ namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::list, list, T, class T, Allocator, class Allocator) {
-	return __to_string_iterator_container__(list);
-}
+template<class T, class Allocator>
+struct convert_type<std::list<T, Allocator>> {
+	void operator()(std::ostream &stream, const std::list<T, Allocator> &list) {
+		stream_container(stream, list);
+	}
+};
 
 }
 

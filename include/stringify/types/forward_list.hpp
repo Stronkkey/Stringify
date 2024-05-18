@@ -1,5 +1,5 @@
 /** @file forward_list.hpp
-    @brief String conversion methods for types provided in <forward_list>. */
+    @brief String conversion methods for types provided in \<forward_list>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,8 @@
 #ifndef __STRINGIFY_FORWARD_LIST_HPP__
 #define __STRINGIFY_FORWARD_LIST_HPP__
 
-#include <stringify/detail/container_string_conversion.hpp>
+#include <stringify/detail/convert_type.hpp>
+#include <stringify/detail/container_streaming.hpp>
 
 #include <forward_list>
 
@@ -37,9 +38,23 @@ namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::forward_list, forward_list, T, class T, Allocator, class Allocator) {
-	return __to_string_iterator_container__(forward_list);
-}
+template<class T, class Allocator>
+struct convert_type<std::forward_list<T, Allocator>> {
+	void operator()(std::ostream &stream, const std::forward_list<T, Allocator> &forward_list) {
+		size_t i = 0;
+		size_t container_size = std::distance(forward_list.begin(), forward_list.end());
+		stream << '{';
+
+		for (const auto &iterator: forward_list) {
+			write_into_stream(stream, iterator);
+
+			if (++i < container_size)
+				stream << ", ";
+		}
+
+		stream << '}';
+	}
+};
 
 }
 

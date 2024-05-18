@@ -1,5 +1,5 @@
 /** @file utility.hpp
-    @brief String conversion methods for types provided in <utility>. */
+    @brief String conversion methods for types provided in \<utility>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,41 +29,41 @@
 #ifndef __STRINGIFY_UTILITY_HPP__
 #define __STRINGIFY_UTILITY_HPP__
 
-#include <stringify/partial_to_string.hpp>
+#include <stringify/detail/container_streaming.hpp>
+#include <stringify/detail/convert_type.hpp>
 
 #include <utility>
+#include <ostream>
 
 namespace Stringify {
 
 namespace detail {
 
-template<size_t>
-struct __integer_sequence_to_string__;
-
-template<>
-struct __integer_sequence_to_string__<0> {
-	template<class T, T... Ints>
-	static String __get_string__(const std::integer_sequence<T, Ints...>&) {
-		return "{}";
+template<class T1, class T2>
+struct convert_type<std::pair<T1, T2>> {
+	void operator()(std::ostream &stream, const std::pair<T1, T2> &pair) {
+		stream << '{';
+		write_into_stream(stream, pair.first);
+		stream << ", ";
+		write_into_stream(stream, pair.second);
+		stream << '}';
 	}
 };
 
-template<size_t size>
-struct __integer_sequence_to_string__ {
-	template<class T, T... Ints>
-	static String __get_string__(const std::integer_sequence<T, Ints...>&) {
-		T array[sizeof...(Ints) + 1] = {Ints...};
-		return __to_string_index_container__(array, sizeof...(Ints));
+template<class T>
+struct convert_type<std::integer_sequence<T>> {
+	void operator()(std::ostream &stream, const std::integer_sequence<T>&) {
+		stream << "{}";
 	}
 };
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::pair, pair, T1, class T1, T2, class T2) {
-	return "{" + to_string(pair.first) + ", " + to_string(pair.second) + '}';
-}
-
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::integer_sequence, integer_sequence, T, class T, Ints..., T... Ints) {
-	return __integer_sequence_to_string__<sizeof...(Ints)>::__get_string__(integer_sequence);
-}
+template<class T, T... Ints>
+struct convert_type<std::integer_sequence<T, Ints...>> {
+	void operator()(std::ostream &stream, const std::integer_sequence<T, Ints...>&) {
+		T array[sizeof...(Ints)] = {Ints...};
+		stream_index_container(stream, array, sizeof...(Ints));
+	}
+};
 
 }
 

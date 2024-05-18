@@ -1,5 +1,5 @@
 /** @file deque.hpp
-    @brief String conversion methods for types provided in <deque>. */
+    @brief String conversion methods for types provided in \<deque>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,8 @@
 #ifndef __STRINGIFY_DEQUE_HPP__
 #define __STRINGIFY_DEQUE_HPP__
 
-#include <stringify/detail/container_string_conversion.hpp>
+#include <stringify/detail/convert_type.hpp>
+#include <stringify/detail/container_streaming.hpp>
 
 #include <deque>
 
@@ -37,9 +38,12 @@ namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE2__(std::deque, deque, T, class T, Allocator, class Allocator) {
-	return __to_string_iterator_container__(deque);
-}
+template<class T, class Allocator>
+struct convert_type<std::deque<T, Allocator>> {
+	void operator()(std::ostream &stream, const std::deque<T, Allocator> &deque) {
+		stream_container(stream, deque);
+	}
+};
 
 }
 

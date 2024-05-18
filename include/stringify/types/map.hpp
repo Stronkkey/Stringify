@@ -1,5 +1,5 @@
 /** @file map.hpp
-    @brief String conversion methods for types provided in <map>. */
+    @brief String conversion methods for types provided in \<map>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,8 @@
 #ifndef __STRINGIFY_MAP_HPP__
 #define __STRINGIFY_MAP_HPP__
 
-#include <stringify/detail/container_string_conversion.hpp>
+#include <stringify/detail/convert_type.hpp>
+#include <stringify/detail/container_streaming.hpp>
 
 #include <map>
 
@@ -37,9 +38,12 @@ namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE4__(std::map, map, Key, class Key, Value, class Value, Compare, class Compare, Allocator, class Allocator) {
-	return __to_string_iterator_pair_container__(map);
-}
+template<class Key, class Value, class Compare, class Allocator>
+struct convert_type<std::map<Key, Value, Compare, Allocator>> {
+	void operator()(std::ostream &stream, const std::map<Key, Value, Compare, Allocator> &map) {
+		stream_pair_container(stream, map);
+	}
+};
 
 }
 

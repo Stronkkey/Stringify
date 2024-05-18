@@ -1,5 +1,5 @@
 /** @file functional.hpp
-    @brief String conversion methods for types provided in <functional>. */
+    @brief String conversion methods for types provided in \<functional>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,30 +29,36 @@
 #ifndef __STRINGIFY_FUNCTIONAL_HPP__
 #define __STRINGIFY_FUNCTIONAL_HPP__
 
-#include <stringify/detail/number_string_conversion.hpp>
-#include <stringify/partial_to_string.hpp>
+#include <stringify/detail/convert_type.hpp>
+#include <stringify/partial_streaming.hpp>
 
+#include <cstdint>
 #include <functional>
+#include <ostream>
 
 namespace Stringify {
 
 namespace detail {
 
-template<class R, class... ReturnType>
-String __to_string_function__(const std::function<R(ReturnType...)> &function) {
-	using sig_ptr = R(*)(ReturnType...);
+template<class R, class... Args>
+struct convert_type<std::function<R(Args...)>> {
+	void operator()(std::ostream &stream, const std::function<R(Args...)> &function) {
+		using signature_pointer = R(*)(Args...);
 
-	auto function_pointer = function.template target<sig_ptr>();
-	return detail::__to_string_int_hex__(reinterpret_cast<uintptr_t>(*function_pointer));
-}
+		auto function_pointer = function.template target<signature_pointer>();
+		std::ios_base::fmtflags flags = stream.flags();
+		stream << std::hex;
+		stream << reinterpret_cast<uintptr_t>(*function_pointer);
+		stream.setf(flags);
+	}
+};
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE1__(std::function, function, Signature, class Signature) {
-	return __to_string_function__(function);
-}
-
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE1__(std::reference_wrapper, reference_wrapper, T, class T) {
-	return to_string(reference_wrapper.get());
-}
+template<class T>
+struct convert_type<std::reference_wrapper<T>> {
+	void operator()(std::ostream &stream, const std::reference_wrapper<T> &reference_wrapper) {
+		write_into_stream(stream, reference_wrapper);
+	}
+};
 
 }
 

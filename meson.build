@@ -1,7 +1,7 @@
 project(
   'stringify',
   'cpp',
-  version : '1.1.0',
+  version : '2.0.0',
   default_options : ['warning_level=0', 'cpp_std=c++14'])
 
 project_description = 'C++14 header only string library'

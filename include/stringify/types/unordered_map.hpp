@@ -1,5 +1,5 @@
 /** @file unordered_map.hpp
-    @brief String conversion methods for types provided in <unordered_map>. */
+    @brief String conversion methods for types provided in \<unordered_map>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,8 @@
 #ifndef __STRINGIFY_UNORDERED_MAP_HPP__
 #define __STRINGIFY_UNORDERED_MAP_HPP__
 
-#include <stringify/detail/container_string_conversion.hpp>
+#include <stringify/detail/convert_type.hpp>
+#include <stringify/detail/container_streaming.hpp>
 
 #include <unordered_map>
 
@@ -37,9 +38,12 @@ namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE_TEMPLATE5__(std::unordered_map, unordered_map, Key, class Key, Value, class Value, Hash, class Hash, Pred, class Pred, Allocator, class Allocator) {
-	return __to_string_iterator_pair_container__(unordered_map);
-}
+template<class Key, class Value, class Hash, class Pred, class Allocator>
+struct convert_type<std::unordered_map<Key, Value, Hash, Pred, Allocator>> {
+	void operator()(std::ostream &stream, const std::unordered_map<Key, Value, Hash, Pred, Allocator> &unordered_map) {
+		stream_pair_container(stream, unordered_map);
+	}
+};
 
 }
 

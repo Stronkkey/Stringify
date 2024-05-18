@@ -1,5 +1,5 @@
 /** @file typeindex.hpp
-    @brief String conversion methods for types provided in <typeindex>. */
+    @brief String conversion methods for types provided in \<typeindex>. */
 /*
   This is free and unencumbered software released into the public domain.
 
@@ -29,21 +29,29 @@
 #ifndef __STRINGIFY_TYPEINDEX_HPP__
 #define __STRINGIFY_TYPEINDEX_HPP__
 
-#include <stringify/detail/inline_to_string.hpp>
+#include <stringify/detail/convert_type.hpp>
 
+#include <ostream>
 #include <typeindex>
 
 namespace Stringify {
 
 namespace detail {
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE__(std::type_info, type_info) {
-	return type_info.name();
-}
+template<>
+struct convert_type<std::type_info> {
+	void operator()(std::ostream &stream, const std::type_info &type_info) {
+		stream << type_info.name();
+	}
+};
 
-__STRINGIFY_DETAIL_TO_STRING_TYPE__(std::type_index, type_index) {
-	return type_index.name();
-}
+template<>
+struct convert_type<std::type_index> {
+	void operator()(std::ostream &stream, const std::type_index &type_index) {
+		stream << type_index.name();
+	}
+};
+
 
 }
 
