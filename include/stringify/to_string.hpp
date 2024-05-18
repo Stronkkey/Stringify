@@ -90,6 +90,17 @@ inline String to_strings(const T &object, Args&&... args) {
 	return string_stream.str();
 }
 
+/**
+* @brief Converts the objects into a string.
+* @details Unlike to_string, no error is generated if an object cannot be converted, instead, it will be ignored.
+* @see write_into_streamn
+*/
+template<class T, class... Args>
+String to_string_n(const T &object, Args&&... args) {
+	std::stringstream string_stream = {};
+	S_WRITE_INTO_STREAMN(string_stream, object, args...);
+	return string_stream.str();
+}
 
 /**
 * @brief Converts the objects into strings.
