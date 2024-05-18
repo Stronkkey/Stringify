@@ -90,12 +90,6 @@ inline String to_strings(const T &object, Args&&... args) {
 	return string_stream.str();
 }
 
-template<class T, class... Args>
-String to_string_n(const T &object, Args&&... args) {
-	std::stringstream string_stream = {};
-	S_WRITE_INTO_STREAMN(string_stream, object, args...);
-	return string_stream.str();
-}
 
 /**
 * @brief Converts the objects into strings.
